@@ -39,7 +39,10 @@ class CheckOutScreen extends StatelessWidget {
               controller: controller.amountController,
               hinText: "Enter Amount",
               textInputType: TextInputType.number,
-              prefixIcon: const Icon(Icons.monetization_on_outlined,color: AppColors.greyColor),
+              prefixIcon: const Icon(
+                  Icons.monetization_on_outlined,
+                  color: AppColors.greyColor,
+              ),
             ),
             SizedBox(height: 20),
             CustomFieldTitle(title: "Invoice Number"),
@@ -48,7 +51,10 @@ class CheckOutScreen extends StatelessWidget {
               controller: controller.invoiceNumberController,
               hinText: "Enter Invoice Number",
               textInputType: TextInputType.text,
-              prefixIcon: const Icon(Icons.add_chart_outlined,color: AppColors.greyColor),
+              prefixIcon: const Icon(
+                  Icons.add_chart_outlined,
+                  color: AppColors.greyColor,
+              ),
             ),
             SizedBox(height: 150),
             AppPrimaryButton(
