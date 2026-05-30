@@ -1,9 +1,15 @@
 import 'package:bkash_payment_system/core/const/app_colors.dart';
 import 'package:bkash_payment_system/core/style/global_text_style.dart';
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentScreen extends StatelessWidget {
-  const PaymentScreen({super.key});
+  final String bkashURL;
+
+  const PaymentScreen({
+    super.key,
+    required this.bkashURL,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +25,13 @@ class PaymentScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+      ),
+      body: WebViewWidget(
+        controller: WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..loadRequest(
+            Uri.parse(bkashURL),
+          ),
       ),
 
     );

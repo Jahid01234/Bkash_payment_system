@@ -62,6 +62,7 @@ class CheckOutScreen extends StatelessWidget {
               textColor: AppColors.whiteColor,
               // isLoading: controller.isLoading.value,
               onTap:(){
+                  controller.checkoutButton();
               },
             ),
           ],
