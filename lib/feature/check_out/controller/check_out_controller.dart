@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:bkash_payment_system/core/const/app_secret.dart';
 import 'package:bkash_payment_system/core/network_caller/end_points.dart';
 import 'package:bkash_payment_system/feature/check_out/model/create_payment_response_model.dart';
+import 'package:bkash_payment_system/feature/check_out/model/execute_payment_response_model.dart';
 import 'package:bkash_payment_system/feature/check_out/model/grant_token_response_model.dart';
 import 'package:bkash_payment_system/feature/payment/view/payment_screen.dart';
 import 'package:flutter/foundation.dart';
@@ -29,6 +30,8 @@ class CheckOutController extends GetxController {
 
     Get.to(() => PaymentScreen(
       bkashURL: paymentResponse.bkashURL,
+      paymentID: paymentResponse.paymentID,
+      idToken: tokenResponse.idToken,
     ));
 
     EasyLoading.showSuccess("Payment Created");
@@ -39,7 +42,7 @@ class CheckOutController extends GetxController {
   // Grant Token method.........................................................
   Future<GrantTokenResponseModel?> grantToken() async {
     EasyLoading.show(status: "Loading...");
-    String url = Urls.grantTokenUrl;
+    final String url = Urls.grantTokenUrl;
 
     try {
       var response = await http.post(
@@ -62,8 +65,6 @@ class CheckOutController extends GetxController {
 
       var responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        amountController.clear();
-        invoiceNumberController.clear();
         return GrantTokenResponseModel.fromJson(response.body);
       }else{
         EasyLoading.showError(responseData["statusMessage"] ?? "Something went wrong");
@@ -90,10 +91,9 @@ class CheckOutController extends GetxController {
     return null;
   }
 
-  // Grant Token method.........................................................
+  // Create payment method.........................................................
   Future<CreatePaymentResponseModel?> createPaymentMethod(String idToken) async {
-    EasyLoading.show(status: "Loading...");
-    String url = Urls.createPaymentUrl;
+    final String url = Urls.createPaymentUrl;
 
     try {
       var response = await http.post(
@@ -121,6 +121,8 @@ class CheckOutController extends GetxController {
 
       var responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
+        amountController.clear();
+        invoiceNumberController.clear();
         return CreatePaymentResponseModel.fromJson(response.body);
       }else{
         EasyLoading.showError(responseData["statusMessage"] ?? "Something went wrong");
@@ -141,6 +143,62 @@ class CheckOutController extends GetxController {
       if (kDebugMode) {
         print("Error: $e");
       }
+    } finally {
+      EasyLoading.dismiss();
+    }
+    return null;
+  }
+
+  // Execute Payment method.....................................................
+  Future<ExecutePaymentResponseModel?> executePayment(String paymentID, String idToken) async {
+    final String url = Urls.executePaymentUrl;
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          "Accept": "application/json",
+          "Authorization": idToken,
+          "X-App-Key": AppSecret.grantTokenAppKey,
+        },
+        body: jsonEncode({
+          "paymentID": paymentID,
+        }),
+      );
+
+      log("Execute Payment URL: ${Urls.executePaymentUrl}");
+      log("Status Code: ${response.statusCode}");
+      log("🔥🔥🔥Execute Payment Response: ${response.body}");
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return ExecutePaymentResponseModel.fromJson(response.body);
+      } else {
+        EasyLoading.showError(
+          responseData["statusMessage"] ?? "Payment execution failed",
+        );
+      }
+    } on SocketException {
+      EasyLoading.showError(
+        "No Internet connection. Please check your network.",
+      );
+    } on TimeoutException {
+      EasyLoading.showError(
+        "Server is taking too long to respond.",
+      );
+    } on HttpException {
+      EasyLoading.showError(
+        "HTTP Exception occurred.",
+      );
+    } on FormatException {
+      EasyLoading.showError(
+        "Invalid response format.",
+      );
+    } catch (e) {
+      log("Execute Payment Error: $e");
+      EasyLoading.showError(
+        "Something went wrong.",
+      );
     } finally {
       EasyLoading.dismiss();
     }
